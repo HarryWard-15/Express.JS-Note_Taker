@@ -3,12 +3,10 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-
 const PORT = process.env.PORT || 3001;
 
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true}));
-
 
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, "/public/notes.html"));
@@ -22,29 +20,33 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, "/public/index.html"));
 });
 
-app.delete('/api/notes', (req, res) => {
-    const listOfNotes = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
-    const noteNum = (req.params.num);
+app.delete('/api/notes/:id', (req, res) => {
+    let listOfNotesDel = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
+    const noteId = req.params.id;
 
-    listOfNotes = listOfNotes.filter(note => {
-        return note.num != noteNum;
+    listOfNotesDel = listOfNotesDel.filter(noteSelected => {
+        return noteSelected.id != noteId;
     });
 
-    fs.writeFileSync("./db/db.json", JSON.stringify(listOfNotes));
-    res.json(listOfNotes);
+    fs.writeFileSync("./db/db.json", JSON.stringify(listOfNotesDel));
+    res.json(listOfNotesDel);
 });
 
 app.post('/api/notes', (req, res) => {
     const note = req.body;
-    const listOfNotes = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
-    const lengthNote = listOfNotes.length;
+    const notesArray = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
+    const lengthNote = notesArray.length;
 
-    note.num = lengthNote;
-    listOfNotes.push(note);
+    note.id = lengthNote;
+    note.content = note;
+    notesArray.push(note);
 
-    fs.writeFileSync("./db/db.json", JSON.stringify(listOfNotes));
-    res.json(listOfNotes);
+    fs.writeFileSync(
+        path.join(__dirname, './db/db.json'),
+        JSON.stringify(notesArray, null, 2)
+    );
+    res.json(notesArray);
 });
 
-app.listen(PORT, () => console.log('Server is hosted on PORT: ' + PORT));
+app.listen(PORT, () => console.log('Server is hosted on PORT: '+`http://localhost:${PORT}!`));
 
