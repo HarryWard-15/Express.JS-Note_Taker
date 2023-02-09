@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true}));
+app.use(express.json());
 
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, "/public/notes.html"));
@@ -35,10 +36,9 @@ app.delete('/api/notes/:id', (req, res) => {
 app.post('/api/notes', (req, res) => {
     const note = req.body;
     const notesArray = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
-    const lengthNote = notesArray.length;
+    const noteId = notesArray.length+1;
 
-    note.id = lengthNote;
-    note.content = note;
+    note.id = noteId;
     notesArray.push(note);
 
     fs.writeFileSync(
